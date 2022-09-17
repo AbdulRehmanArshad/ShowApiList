@@ -2,16 +2,31 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import axios from "axios"
 
+const getlocalItems = () => {
+    let list = localStorage.getItem("list")
+    if (list) {
+        return JSON.parse(localStorage.getItem("list"))
+    } else {
+        return []
+    }
+}
 const Showlist = () => {
-    const [list, setList] = useState([])
+    const [list, setList] = useState(getlocalItems())
     const [showModal, setShowModal] = React.useState(false);
     const [tittle, setTittle] = useState()
     const [update, setUpdate] = useState()
+    const [updateLocalStorage, setUpdateLocalStorage] = useState()
+    const loc = (params) => {
+        getlocalItems()
+    }
 
     const SaveChanges = () => {
+        console.log(update);
         list[update].title = tittle
         setList(list)
         setShowModal(false)
+        localStorage.setItem("list", JSON.stringify(list))
+
     }
     const Edit = (item, index) => {
         setShowModal(true)
@@ -20,15 +35,21 @@ const Showlist = () => {
 
     }
     const AxiosCall = () => {
-        axios.get("https://jsonplaceholder.typicode.com/posts").then((res) => {
-            setList(res.data)
-        })
+        axios.get("https://jsonplaceholder.typicode.com/posts").then((res) => setList(res.data))
     }
     useEffect(() => {
-        AxiosCall()
+        const list = localStorage.getItem("list")
+        if (list) {
+            setList(getlocalItems())
+
+        } else {
+            AxiosCall()
+        }
+
     }, [])
     return (
         <>
+
             {showModal ? (
                 <>
                     <div
@@ -37,9 +58,6 @@ const Showlist = () => {
                         <div className="relative w-auto my-6 mx-auto max-w-3xl">
                             {/*content*/}
                             <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
-                                {/*header*/}
-
-                                {/*body*/}
                                 <div className="relative p-6 flex-auto">
                                     <div>
                                         <label htmlFor="first_name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Tittle</label>
@@ -79,7 +97,7 @@ const Showlist = () => {
                     list.map((item, index) => {
                         return (
                             <>
-                                <div key={item} style={{ marginTop: "30px" }}  >
+                                <div key={item.id} style={{ marginTop: "30px" }}  >
                                     <li  >{item.title}</li>
                                     <button onClick={() => Edit(item, index)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                         Edit
